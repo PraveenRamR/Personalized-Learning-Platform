@@ -220,7 +220,6 @@ The application is containerized and ready for deployment:
 4. Add tests if applicable
 5. Submit a pull request
 
-## License
-
-This project is for educational and demonstration purposes.
+-----------------------------------------
+This project is for demonstration purposes.
 
