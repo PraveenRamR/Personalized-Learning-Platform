@@ -17,7 +17,6 @@ A comprehensive asynchronous full-stack web application for AI-driven personaliz
 - **Backend**: Django REST Framework + JWT auth + Celery + Redis + Channels + scikit-surprise
 - **Frontend**: React + TypeScript + Bootstrap + React Query + Formik
 - **Database**: PostgreSQL
-- **Real-time**: WebSocket with Django Channels
 - **Background Jobs**: Celery with Redis broker
 - **AI/ML**: Collaborative filtering with scikit-surprise library
 
