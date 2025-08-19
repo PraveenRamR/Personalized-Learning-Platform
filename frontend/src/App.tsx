@@ -439,7 +439,7 @@ function App() {
 																						const itemName = item.title || 'content';
 																						interactionMutation.mutate(
 																							{ content_item: parseInt(itemId), action: 'viewed', score: 1 },
-																							{ context: { itemName } }
+																							
 																						);
 																					}}
 																				>
@@ -456,7 +456,7 @@ function App() {
 																							const itemName = item.title || 'content';
 																							interactionMutation.mutate(
 																								{ content_item: parseInt(itemId), action: 'liked', score: 2 },
-																								{ context: { itemName } }
+																								
 																							);
 																						}}
 																					>
@@ -481,7 +481,6 @@ function App() {
 																									action: 'disliked',
 																									score: -1 
 																								},
-																								{ context: { itemName } }
 																							);
 																						}}
 																					>
