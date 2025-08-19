@@ -55,7 +55,6 @@ docker compose exec backend python manage.py createsuperuser
 - **API**: http://localhost:8000/api/
 - **API Documentation**: http://localhost:8000/api/docs/
 - **Admin Panel**: http://localhost:8000/admin/
-- **WebSocket**: ws://localhost:8000/ws/recommendations/
 
 ## User Guide
 
