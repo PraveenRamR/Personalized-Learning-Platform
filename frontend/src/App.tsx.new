@@ -1,0 +1,143 @@
+import React, { useState } from 'react';
+import { Card, Button, Container, Row, Col, Spinner } from 'react-bootstrap';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+import { useAuth } from './features/auth/AuthContext';
+import MainLayout from './layouts/MainLayout';
+import LoginForm from './components/auth/LoginForm';
+import RecommendationsList from './components/recommendation/RecommendationsList';
+import InterestForm from './components/profile/InterestForm';
+import AddContentModal from './components/content/AddContentModal';
+import { createContentItem, triggerRecommendationRefresh } from './services/contentService';
+
+function App() {
+  const { token, user, isLoading } = useAuth();
+  const queryClient = useQueryClient();
+  
+  // Toast state
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastVariant, setToastVariant] = useState('primary');
+  
+  // Modal state
+  const [showAddContentModal, setShowAddContentModal] = useState(false);
+  
+  // Mutations
+  const createContentMutation = useMutation({
+    mutationFn: (data: any) => createContentItem(token as string, data),
+    onSuccess: () => {
+      setShowAddContentModal(false);
+      setToastMessage('Content item created successfully!');
+      setToastVariant('success');
+      setShowToast(true);
+      queryClient.invalidateQueries({ queryKey: ['content'] });
+    },
+    onError: () => {
+      setToastMessage('Failed to create content item');
+      setToastVariant('danger');
+      setShowToast(true);
+    }
+  });
+
+  const refreshRecommendationsMutation = useMutation({
+    mutationFn: () => triggerRecommendationRefresh(token as string),
+    onSuccess: () => {
+      setToastMessage('Recommendation refresh triggered! Check back in a few moments.');
+      setToastVariant('info');
+      setShowToast(true);
+      // Invalidate the recommendations query to refresh data
+      setTimeout(() => queryClient.invalidateQueries({ queryKey: ['recs'] }), 5000);
+    },
+    onError: () => {
+      setToastMessage('Failed to trigger recommendation refresh.');
+      setToastVariant('danger');
+      setShowToast(true);
+    }
+  });
+
+  if (isLoading) {
+    return (
+      <Container className="d-flex justify-content-center align-items-center min-vh-100">
+        <Spinner animation="border" />
+      </Container>
+    );
+  }
+
+  if (!token || !user) {
+    return (
+      <Container className="mt-5">
+        <Row className="justify-content-center">
+          <Col md={6}>
+            <LoginForm />
+          </Col>
+        </Row>
+      </Container>
+    );
+  }
+
+  return (
+    <MainLayout
+      showToast={showToast}
+      toastMessage={toastMessage}
+      toastVariant={toastVariant}
+      setShowToast={setShowToast}
+    >
+      <Row>
+        <Col md={4}>
+          <Card className="mb-4">
+            <Card.Header>
+              <h5 className="mb-0">Your Profile</h5>
+            </Card.Header>
+            <Card.Body>
+              <InterestForm />
+            </Card.Body>
+          </Card>
+
+          <Card className="mb-4">
+            <Card.Header>
+              <h5 className="mb-0">Actions</h5>
+            </Card.Header>
+            <Card.Body>
+              <p>Manage content and recommendations</p>
+              <div className="d-grid gap-2">
+                <Button 
+                  variant="primary" 
+                  onClick={() => setShowAddContentModal(true)}
+                >
+                  Add Content Item
+                </Button>
+                <Button 
+                  variant="outline-primary" 
+                  onClick={() => refreshRecommendationsMutation.mutate()}
+                  disabled={refreshRecommendationsMutation.isPending}
+                >
+                  {refreshRecommendationsMutation.isPending ? 
+                    <><Spinner size="sm" animation="border" /> Refreshing...</> : 
+                    'Refresh Recommendations'
+                  }
+                </Button>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+        
+        <Col md={8}>
+          <RecommendationsList 
+            setToastMessage={setToastMessage} 
+            setShowToast={setShowToast}
+            setToastVariant={setToastVariant}
+          />
+        </Col>
+      </Row>
+
+      <AddContentModal
+        show={showAddContentModal}
+        onHide={() => setShowAddContentModal(false)}
+        onSubmit={createContentMutation.mutate}
+        isLoading={createContentMutation.isPending}
+      />
+    </MainLayout>
+  );
+}
+
+export default App;

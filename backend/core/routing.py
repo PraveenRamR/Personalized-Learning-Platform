@@ -1,0 +1,5 @@
+from django.urls import path
+
+from core.modules.recommendations.routing import websocket_urlpatterns as recommendation_websocket_urlpatterns
+
+websocket_urlpatterns = recommendation_websocket_urlpatterns
