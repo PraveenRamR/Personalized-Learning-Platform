@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { login as apiLogin, register as apiRegister } from '../../services/authService';
+import { login as apiLogin, register as apiRegister, getProfile } from '../../services/authService';
 
 interface User {
   id: number;
@@ -54,25 +54,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       const data = await apiLogin(username, password);
-      
       if (data.access) {
         localStorage.setItem('token', data.access);
-        
-        // Fetch user profile or use user data if available
-        const userData = data.user || {
-          username,
-          id: 0,  // placeholder
-          email: '',
-          is_staff: false
-        };
-        
+        let userData;
+        try {
+          userData = await getProfile(data.access);
+        } catch (err) {
+          userData = data.user || {
+            username,
+            id: 0,
+            email: '',
+            is_staff: false
+          };
+        }
         localStorage.setItem('user', JSON.stringify(userData));
         setToken(data.access);
         setUser(userData);
         return data;
       }
-      
+      // If no access token, check for error message
+      if (data.detail) {
+        throw new Error(data.detail);
+      }
       throw new Error('Login failed');
+    } catch (err: any) {
+      // Pass error message up for UI display
+      throw new Error(err?.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -82,25 +89,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       const data = await apiRegister(userData);
-      
       if (data.access) {
         localStorage.setItem('token', data.access);
-        
-        // Use user data if available or set placeholder
-        const user = data.user || {
-          username: userData.username,
-          id: 0,
-          email: userData.email || '',
-          is_staff: false
-        };
-        
-        localStorage.setItem('user', JSON.stringify(user));
+        let profileData;
+        try {
+          profileData = await getProfile(data.access);
+        } catch (err) {
+          profileData = data.user || {
+            username: userData.username,
+            id: 0,
+            email: userData.email || '',
+            is_staff: false
+          };
+        }
+        localStorage.setItem('user', JSON.stringify(profileData));
         setToken(data.access);
-        setUser(user);
+        setUser(profileData);
         return data;
       }
-      
+      // If no access token, check for error message
+      if (data.detail) {
+        throw new Error(data.detail);
+      }
       throw new Error('Registration failed');
+    } catch (err: any) {
+      throw new Error(err?.message || 'Registration failed');
     } finally {
       setIsLoading(false);
     }

@@ -1,0 +1,97 @@
+/* Accessibility enhancements */
+
+/* Focus styles */
+:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* Skip to content link */
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* High contrast mode adjustments */
+@media (forced-colors: active) {
+  .btn {
+    border: 2px solid transparent;
+  }
+  
+  .btn:focus {
+    outline: 2px solid ButtonText;
+  }
+}
+
+/* Improved color contrast */
+.text-muted {
+  color: #5a6268 !important; /* Ensure proper contrast */
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .container {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  
+  /* Stack items on small screens */
+  .row.stack-on-mobile {
+    flex-direction: column;
+  }
+  
+  /* Smaller fonts on mobile */
+  h1 {
+    font-size: 1.8rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+}
+
+/* Better keyboard navigation */
+.nav-link:focus {
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Make modals more accessible */
+.modal-dialog {
+  max-height: calc(100vh - 60px);
+  overflow-y: auto;
+}
+
+/* Ensure links are distinguishable */
+a {
+  text-decoration: underline;
+}
+
+a.btn, .nav a, a.nav-link, a.card {
+  text-decoration: none;
+}
+
+/* Improved form field accessibility */
+input:focus, select:focus, textarea:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Screen reader utilities */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+  }
+}

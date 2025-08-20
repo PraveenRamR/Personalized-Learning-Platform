@@ -14,13 +14,15 @@ interface RecommendationsListProps {
 
 function RecommendationsList({ setToastMessage, setShowToast, setToastVariant }: RecommendationsListProps) {
   const { token } = useAuth();
-
+  // Removed showLiked state and logic
   const recsQuery = useQuery({
     queryKey: ['recs'],
     queryFn: () => fetchRecommendations(token as string),
     enabled: !!token,
     refetchInterval: 30000 // Poll every 30 seconds
   });
+
+  const allItems = recsQuery.data?.results?.filter((item: any) => item.user_interaction !== 'disliked') || [];
 
   return (
     <Card>
@@ -37,7 +39,7 @@ function RecommendationsList({ setToastMessage, setShowToast, setToastVariant }:
           <Alert variant="danger">
             Error loading recommendations
           </Alert>
-        ) : recsQuery.data?.results?.length === 0 ? (
+        ) : allItems.length === 0 ? (
           <div className="text-center p-4">
             <p>No recommendations yet. Update your profile interests or interact with some content!</p>
             <InterestForm />
@@ -56,44 +58,29 @@ function RecommendationsList({ setToastMessage, setShowToast, setToastVariant }:
             </div>
 
             <Row xs={1} md={2} className="g-4">
-              {/* Sort recommendations by priority: Interests (matching_interests), then Likes, then Views */}
-              {recsQuery.data?.results
-                .filter((item: any) => {
-                  // Remove disliked items completely
-                  return item.user_interaction !== 'disliked';
-                })
+              {allItems
                 .sort((a: any, b: any) => {
                   // Priority 1: Interest matches (highest first)
                   const aHasInterests = a.matching_interests?.length > 0;
                   const bHasInterests = b.matching_interests?.length > 0;
-                  
                   if (aHasInterests !== bHasInterests) {
-                    return aHasInterests ? -1 : 1; // Items with matching interests come first
+                    return aHasInterests ? -1 : 1;
                   }
-                  
-                  // If both have interests, compare by interest match score
                   if (aHasInterests && bHasInterests) {
                     if ((a.interest_match_score || 0) !== (b.interest_match_score || 0)) {
                       return (b.interest_match_score || 0) - (a.interest_match_score || 0);
                     }
                   }
-                  
-                  // Priority 2: Interaction type (likes > views)
                   const aLiked = a.user_interaction === 'liked';
                   const bLiked = b.user_interaction === 'liked';
-                  
                   if (aLiked !== bLiked) {
-                    return aLiked ? -1 : 1; // Liked items come before non-liked items
+                    return aLiked ? -1 : 1;
                   }
-                  
                   const aViewed = a.user_interaction === 'viewed';
                   const bViewed = b.user_interaction === 'viewed';
-                  
                   if (aViewed !== bViewed) {
-                    return aViewed ? -1 : 1; // Viewed items come before non-viewed items
+                    return aViewed ? -1 : 1;
                   }
-                  
-                  // Priority 3: Predicted rating (highest first)
                   return (b.predicted_rating || 0) - (a.predicted_rating || 0);
                 })
                 .map((item: any) => (

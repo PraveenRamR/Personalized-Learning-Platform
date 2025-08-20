@@ -17,7 +17,9 @@ function LoginForm() {
 
   const registerSchema = Yup.object({
     username: Yup.string().min(3, 'Must be at least 3 characters').required('Required'),
-    password: Yup.string().min(6, 'Must be at least 6 characters').required('Required'),
+    password: Yup.string()
+      .min(6, 'Password must be at least 6 characters')
+      .required('Password is required'),
     email: Yup.string().email('Invalid email address'),
   });
 

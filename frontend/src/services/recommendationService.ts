@@ -7,12 +7,7 @@ export async function fetchRecommendations(token: string) {
   return res.data;
 }
 
-export async function triggerRecommendationRefresh(token: string) {
-  const res = await api.post("/recommendations/trigger_refresh/", {}, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  return res.data;
-}
+// Removed triggerRecommendationRefresh for demonstration
 
 // Polling function to replace WebSockets
 export async function pollForRecommendationUpdates(token: string, callback: () => void) {
