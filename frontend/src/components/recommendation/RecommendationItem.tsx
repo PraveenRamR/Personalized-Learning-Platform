@@ -86,14 +86,23 @@ function RecommendationItem({ item, setToastMessage, setShowToast, setToastVaria
       return { itemName };
     },
     onSuccess: (_data, variables, context: any) => {
-      // Get the content item name from the context
       const itemName = context?.itemName || 'content';
-      
-      // Set toast message and color based on action
       if (variables.action === 'liked') {
         setToastMessage(`You have liked ${itemName}`);
         setToastVariant('success');
-  } else if (variables.action === 'disliked') {
+        // Store liked tags in sessionStorage for immediate sorting, user-specific
+        const auth = JSON.parse(localStorage.getItem('user') || '{}');
+        const userId = auth?.id ? String(auth.id) : 'guest';
+        const key = `recentLikedTags_${userId}`;
+        if (item.tags && item.tags.length > 0) {
+          const stored = sessionStorage.getItem(key);
+          let likedTags = stored ? JSON.parse(stored) : [];
+          likedTags = Array.from(new Set([...likedTags, ...item.tags]));
+          sessionStorage.setItem(key, JSON.stringify(likedTags));
+        }
+        // Invalidate recommendations to trigger re-sort
+        queryClient.invalidateQueries({ queryKey: ['recs'] });
+      } else if (variables.action === 'disliked') {
         setToastMessage(`You have disliked ${itemName}`);
         setToastVariant('danger');
         queryClient.invalidateQueries({ queryKey: ['recs'] });
@@ -101,7 +110,6 @@ function RecommendationItem({ item, setToastMessage, setShowToast, setToastVaria
         setToastMessage(`You have viewed ${itemName}`);
         setToastVariant('info');
       }
-      
       setShowToast(true);
       console.log('Interaction successful:', variables);
     },

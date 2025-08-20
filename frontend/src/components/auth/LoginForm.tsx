@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Logo from '../Logo';
 import { useMutation } from '@tanstack/react-query';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
@@ -35,64 +36,64 @@ function LoginForm() {
   });
 
   return (
-    <Card>
-      <Card.Header>
-        <Nav variant="tabs">
-          <Nav.Item>
-            <Nav.Link active={isLogin} onClick={() => setIsLogin(true)}>Login</Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link active={!isLogin} onClick={() => setIsLogin(false)}>Register</Nav.Link>
-          </Nav.Item>
-        </Nav>
-      </Card.Header>
-      <Card.Body>
-        {error && <Alert variant="danger">{error}</Alert>}
-        <Formik
-          initialValues={isLogin ? { username: '', password: '' } : { username: '', password: '', email: '', first_name: '', last_name: '' }}
-          validationSchema={isLogin ? loginSchema : registerSchema}
-          onSubmit={(values) => mutation.mutate(values)}
-        >
-          <Form>
-            <BootstrapForm.Group className="mb-3">
-              <label htmlFor="username">Username</label>
-              <Field id="username" name="username" className="form-control" />
-              <ErrorMessage name="username" component="div" className="text-danger" />
-            </BootstrapForm.Group>
-            
-            <BootstrapForm.Group className="mb-3">
-              <label htmlFor="password">Password</label>
-              <Field id="password" name="password" type="password" className="form-control" />
-              <ErrorMessage name="password" component="div" className="text-danger" />
-            </BootstrapForm.Group>
-            
-            {!isLogin && (
-              <>
+    <div className="d-flex flex-column align-items-center mb-4">
+      <Logo size={56} />
+      <Card className="mt-3 w-100" style={{ maxWidth: 400 }}>
+        <Card.Header>
+          <Nav variant="tabs">
+            <Nav.Item>
+              <Nav.Link active={isLogin} onClick={() => setIsLogin(true)}>Login</Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link active={!isLogin} onClick={() => setIsLogin(false)}>Register</Nav.Link>
+            </Nav.Item>
+          </Nav>
+        </Card.Header>
+        <Card.Body>
+          {error && <Alert variant="danger">{error}</Alert>}
+          <Formik
+            initialValues={isLogin ? { username: '', password: '' } : { username: '', password: '', email: '', first_name: '', last_name: '' }}
+            validationSchema={isLogin ? loginSchema : registerSchema}
+            onSubmit={(values) => mutation.mutate(values)}
+          >
+            {() => (
+              <Form>
                 <BootstrapForm.Group className="mb-3">
-                  <label htmlFor="email">Email</label>
-                  <Field id="email" name="email" type="email" className="form-control" />
-                  <ErrorMessage name="email" component="div" className="text-danger" />
+                  <label htmlFor="username">Username</label>
+                  <Field id="username" name="username" className="form-control" />
+                  <ErrorMessage name="username" component="div" className="text-danger" />
                 </BootstrapForm.Group>
-                
                 <BootstrapForm.Group className="mb-3">
-                  <label htmlFor="first_name">First Name</label>
-                  <Field id="first_name" name="first_name" className="form-control" />
+                  <label htmlFor="password">Password</label>
+                  <Field id="password" name="password" type="password" className="form-control" />
+                  <ErrorMessage name="password" component="div" className="text-danger" />
                 </BootstrapForm.Group>
-                
-                <BootstrapForm.Group className="mb-3">
-                  <label htmlFor="last_name">Last Name</label>
-                  <Field id="last_name" name="last_name" className="form-control" />
-                </BootstrapForm.Group>
-              </>
+                {!isLogin && (
+                  <>
+                    <BootstrapForm.Group className="mb-3">
+                      <label htmlFor="email">Email</label>
+                      <Field id="email" name="email" type="email" className="form-control" />
+                      <ErrorMessage name="email" component="div" className="text-danger" />
+                    </BootstrapForm.Group>
+                    <BootstrapForm.Group className="mb-3">
+                      <label htmlFor="first_name">First Name</label>
+                      <Field id="first_name" name="first_name" className="form-control" />
+                    </BootstrapForm.Group>
+                    <BootstrapForm.Group className="mb-3">
+                      <label htmlFor="last_name">Last Name</label>
+                      <Field id="last_name" name="last_name" className="form-control" />
+                    </BootstrapForm.Group>
+                  </>
+                )}
+                <Button type="submit" disabled={mutation.isPending}>
+                  {mutation.isPending ? <Spinner size="sm" /> : isLogin ? 'Login' : 'Register'}
+                </Button>
+              </Form>
             )}
-            
-            <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending ? <Spinner size="sm" /> : isLogin ? 'Login' : 'Register'}
-            </Button>
-          </Form>
-        </Formik>
-      </Card.Body>
-    </Card>
+          </Formik>
+        </Card.Body>
+      </Card>
+    </div>
   );
 }
 

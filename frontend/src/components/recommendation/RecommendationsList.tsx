@@ -24,6 +24,24 @@ function RecommendationsList({ setToastMessage, setShowToast, setToastVariant }:
 
   const allItems = recsQuery.data?.results?.filter((item: any) => item.user_interaction !== 'disliked') || [];
 
+  // Get tags from all liked items (persist in sessionStorage, user-specific)
+  let likedTags: string[] = [];
+  const likedItems = allItems.filter((item: any) => item.user_interaction === 'liked');
+  const auth = JSON.parse(localStorage.getItem('user') || '{}');
+  const userId = auth?.id ? String(auth.id) : 'guest';
+  const key = `recentLikedTags_${userId}`;
+  if (likedItems.length > 0) {
+    // Union of all liked tags
+    likedTags = Array.from(new Set(likedItems.flatMap((item: any) => item.tags || [])));
+    sessionStorage.setItem(key, JSON.stringify(likedTags));
+  } else {
+    // If no liked item in current data, check sessionStorage
+    const stored = sessionStorage.getItem(key);
+    if (stored) {
+      likedTags = JSON.parse(stored);
+    }
+  }
+
   return (
     <Card>
       <Card.Header className="d-flex justify-content-between align-items-center">
@@ -60,6 +78,12 @@ function RecommendationsList({ setToastMessage, setShowToast, setToastVariant }:
             <Row xs={1} md={2} className="g-4">
               {allItems
                 .sort((a: any, b: any) => {
+                  // Priority 0: Items with tags matching any likedTags
+                  const aRelated = a.tags?.some((tag: string) => likedTags.includes(tag));
+                  const bRelated = b.tags?.some((tag: string) => likedTags.includes(tag));
+                  if (aRelated !== bRelated) {
+                    return aRelated ? -1 : 1;
+                  }
                   // Priority 1: Interest matches (highest first)
                   const aHasInterests = a.matching_interests?.length > 0;
                   const bHasInterests = b.matching_interests?.length > 0;
