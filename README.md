@@ -14,10 +14,10 @@ A comprehensive asynchronous full-stack web application for AI-driven personaliz
 
 ## Tech Stack
 
-- **Backend**: Django REST Framework + JWT auth + Celery + Redis + Channels + scikit-surprise
+- **Backend**: Django REST Framework + JWT auth + Celery  + scikit-surprise
 - **Frontend**: React + TypeScript + Bootstrap + React Query + Formik
 - **Database**: PostgreSQL
-- **Background Jobs**: Celery with Redis broker
+- **Background Jobs**: Celery
 - **AI/ML**: Collaborative filtering with scikit-surprise library
 
 ## Quick Start
@@ -207,9 +207,7 @@ npm test
 The application is containerized and ready for deployment:
 
 1. Set production environment variables
-2. Build and push Docker images
-3. Deploy with docker-compose or Kubernetes
-4. Configure production database and Redis instances
+2. Configure production database
 
 ## Contributing
 
