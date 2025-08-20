@@ -10,7 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import ContentItem, Interaction, Profile
 from .serializers import ContentItemSerializer, InteractionSerializer, ProfileSerializer, UserSerializer
-from .tasks import enqueue_recommendation_refresh
+ # Removed Celery task import for demonstration
 
 
 class IsSelfOrReadOnly(permissions.BasePermission):
@@ -119,18 +119,47 @@ class InteractionViewSet(viewsets.ModelViewSet):
 		if 'user' in serializer.initial_data:
 			del serializer.initial_data['user']
 		instance = serializer.save(user=self.request.user)
-		enqueue_recommendation_refresh.delay(user_id=self.request.user.id)
+		# Add interest to profile if action is 'add_interest' and tag is provided
+		if instance.action == "add_interest":
+			tag = serializer.initial_data.get('tag')
+			if tag:
+				profile, _ = Profile.objects.get_or_create(user=self.request.user)
+				interests = profile.interests or []
+				if tag not in interests:
+					interests.append(tag)
+					profile.interests = interests
+					profile.save()
+		# Update UserProgress for 'viewed' action
+		from core.modules.analytics.models import UserProgress
+		if instance.action == "viewed":
+			user_progress, created = UserProgress.objects.get_or_create(user=self.request.user)
+			user_progress.total_content_viewed += 1
+			user_progress.save()
 		return instance
 
 
 class RecommendationViewSet(viewsets.ViewSet):
+	@action(detail=False, methods=["get"], url_path="liked")
+	def liked(self, request: Request) -> Response:
+		user = request.user
+		# Get IDs of content items liked by the user
+		liked_ids = set(
+			Interaction.objects.filter(user=user, action='liked').values_list('content_item_id', flat=True)
+		)
+		qs = ContentItem.objects.filter(id__in=liked_ids)
+		data = ContentItemSerializer(qs.order_by("-created_at"), many=True).data
+		return Response({"results": data})
 	permission_classes = [permissions.IsAuthenticated]
 
 	@action(detail=False, methods=["get"], url_path="personalized")
 	def personalized(self, request: Request) -> Response:
 		user = request.user
 		interests: List[str] = getattr(user.profile, "interests", []) if hasattr(user, "profile") else []
-		qs = ContentItem.objects.all()
+		# Get IDs of content items disliked by the user
+		disliked_ids = set(
+			Interaction.objects.filter(user=user, action='disliked').values_list('content_item_id', flat=True)
+		)
+		qs = ContentItem.objects.exclude(id__in=disliked_ids)
 		if interests:
 			q = Q()
 			for tag in interests:

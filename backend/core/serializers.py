@@ -7,7 +7,7 @@ from .models import ContentItem, Interaction, Profile
 class UserSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = User
-		fields = ["id", "username", "email", "first_name", "last_name"]
+		fields = ["id", "username", "email", "first_name", "last_name", "is_staff"]
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -31,7 +31,7 @@ class InteractionSerializer(serializers.ModelSerializer):
 		read_only_fields = ["timestamp", "user"]
 
 	def validate_action(self, value: str) -> str:
-		allowed = {"viewed", "liked", "completed", "disliked"}
+		allowed = {"viewed", "liked", "completed", "disliked", "add_interest"}
 		if value not in allowed:
 			raise serializers.ValidationError(f"Action must be one of {sorted(allowed)}")
 		return value

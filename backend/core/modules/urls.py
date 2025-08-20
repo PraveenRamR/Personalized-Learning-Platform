@@ -15,4 +15,10 @@ urlpatterns = [
     
     # Recommendation URLs
     path('', include('core.modules.recommendations.urls')),
+    
+    # Analytics URLs - new non-disruptive addition
+    path('analytics/', include('core.modules.analytics.urls')),
+    
+    # Dashboard URLs - aggregated data for frontend dashboard
+    path('dashboard/', include('core.modules.dashboard.urls')),
 ]

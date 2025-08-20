@@ -18,5 +18,8 @@ router.register(r"recommendations", RecommendationViewSet, basename="recommendat
 
 urlpatterns = [
 	path("", include(router.urls)),
+	
+	# Include all module URLs
+	path("", include("core.modules.urls")),
 ]
 
