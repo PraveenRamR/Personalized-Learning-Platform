@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import ContentItem, Interaction, Profile
-from .serializers import ContentItemSerializer, InteractionSerializer, ProfileSerializer, UserSerializer
+from .serializers import CoreContentItemSerializer, InteractionSerializer, CoreProfileSerializer, CoreUserSerializer
  # Removed Celery task import for demonstration
 
 
@@ -27,7 +27,7 @@ class IsAdminUser(permissions.BasePermission):
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
 	queryset = User.objects.all().order_by("id")
-	serializer_class = UserSerializer
+	serializer_class = CoreUserSerializer
 	permission_classes = [permissions.IsAuthenticated]
 
 	@action(detail=False, methods=["post"], permission_classes=[permissions.AllowAny])
@@ -65,7 +65,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 			return Response({
 				"access": str(refresh.access_token),
 				"refresh": str(refresh),
-				"user": UserSerializer(user).data
+				"user": CoreUserSerializer(user).data
 			}, status=status.HTTP_201_CREATED)
 		except Exception as e:
 			return Response(
@@ -76,7 +76,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 
 class ProfileViewSet(viewsets.ModelViewSet):
 	queryset = Profile.objects.select_related("user").all()
-	serializer_class = ProfileSerializer
+	serializer_class = CoreProfileSerializer
 	permission_classes = [permissions.IsAuthenticated, IsSelfOrReadOnly]
 
 	def perform_create(self, serializer):
@@ -95,7 +95,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
 class ContentItemViewSet(viewsets.ModelViewSet):
 	queryset = ContentItem.objects.all().order_by("-created_at")
-	serializer_class = ContentItemSerializer
+	serializer_class = CoreContentItemSerializer
 	permission_classes = [permissions.IsAuthenticated]
 
 	def get_permissions(self):
@@ -139,6 +139,9 @@ class InteractionViewSet(viewsets.ModelViewSet):
 
 
 class RecommendationViewSet(viewsets.ViewSet):
+	serializer_class = CoreContentItemSerializer
+	permission_classes = [permissions.IsAuthenticated]
+
 	@action(detail=False, methods=["get"], url_path="liked")
 	def liked(self, request: Request) -> Response:
 		user = request.user
@@ -147,23 +150,14 @@ class RecommendationViewSet(viewsets.ViewSet):
 			Interaction.objects.filter(user=user, action='liked').values_list('content_item_id', flat=True)
 		)
 		qs = ContentItem.objects.filter(id__in=liked_ids)
-		data = ContentItemSerializer(qs.order_by("-created_at"), many=True).data
+		data = CoreContentItemSerializer(qs.order_by("-created_at"), many=True).data
 		return Response({"results": data})
-	permission_classes = [permissions.IsAuthenticated]
 
 	@action(detail=False, methods=["get"], url_path="personalized")
 	def personalized(self, request: Request) -> Response:
 		user = request.user
-		interests: List[str] = getattr(user.profile, "interests", []) if hasattr(user, "profile") else []
-		# Get IDs of content items disliked by the user
-		disliked_ids = set(
-			Interaction.objects.filter(user=user, action='disliked').values_list('content_item_id', flat=True)
-		)
-		qs = ContentItem.objects.exclude(id__in=disliked_ids)
-		if interests:
-			q = Q()
-			for tag in interests:
-				q |= Q(tags__icontains=tag)
-			qs = qs.filter(q)
-		data = ContentItemSerializer(qs.order_by("-created_at")[:20], many=True).data
+		# Use SVD AI model for recommendations
+		from core.services.recommendation_service.recommendation_algorithms import generate_recommendations
+		recommended_items = generate_recommendations(user)
+		data = CoreContentItemSerializer(recommended_items, many=True).data
 		return Response({"results": data})

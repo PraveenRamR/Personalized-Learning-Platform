@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from .models import Interaction
-from ..content.serializers import ContentItemSerializer
+from ..content.serializers import ContentModuleContentItemSerializer
 
 class InteractionSerializer(serializers.ModelSerializer):
-    content_item_detail = ContentItemSerializer(source='content_item', read_only=True)
+    content_item_detail = ContentModuleContentItemSerializer(source='content_item', read_only=True)
     
     class Meta:
         model = Interaction

@@ -7,6 +7,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserSerializer
 
 class UserViewSet(viewsets.ViewSet):
+    serializer_class = UserSerializer
     def create_user(self, username, password, email=None, first_name=None, last_name=None):
         return User.objects.create_user(
             username=username,

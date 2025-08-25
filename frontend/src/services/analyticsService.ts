@@ -1,3 +1,21 @@
+// Get personalized recommendations for the user
+export const getPersonalizedRecommendations = async (token: string) => {
+  try {
+    const response = await api.get(
+      'recommendations/personalized/',
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    return response.data.results;
+  } catch (error) {
+    console.error('Error fetching personalized recommendations:', error);
+    throw error;
+  }
+};
 import { api } from './apiClient';
 
 interface AnalyticsEventData {

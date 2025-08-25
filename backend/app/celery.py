@@ -21,8 +21,8 @@ app.conf.beat_schedule = {
         'schedule': crontab(hour=1, minute=0),  # Run at 1 AM
     },
     # Aggregate analytics data hourly
-    'aggregate-analytics-data-hourly': {
+    'aggregate-analytics-data-minutely': {
         'task': 'core.tasks.aggregate_analytics_data',
-        'schedule': crontab(minute=0),  # Run every hour
+        'schedule': crontab(minute='*'),  # Run every minute
     },
 }

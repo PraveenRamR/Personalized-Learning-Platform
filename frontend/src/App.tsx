@@ -13,6 +13,7 @@ import AddContentModal from './components/content/AddContentModal';
 import AnalyticsInsights from './components/analytics/AnalyticsInsights';
 import ActivityTracker from './components/analytics/ActivityTracker';
 import { createContentItem } from './services/contentService';
+import { api } from './services/apiClient';
 
 function App() {
   const { token, user, isLoading } = useAuth();
@@ -115,6 +116,30 @@ function App() {
                 )}
               </Col>
               <Col md={8}>
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <h4 className="mb-0">Personalized Recommendations</h4>
+                  <Button
+                    variant="outline-primary"
+                    onClick={async () => {
+                      try {
+                        // First, trigger backend to update recommendations
+                        await api.post('recommendations/refresh/');
+                        // Then, fetch the updated recommendations asynchronously
+                        await api.get('recommendations/personalized/');
+                        setToastMessage('Recommendations refreshed!');
+                        setToastVariant('success');
+                        setShowToast(true);
+                        // Optionally, trigger a refetch in RecommendationsList via context or props
+                      } catch {
+                        setToastMessage('Failed to refresh recommendations.');
+                        setToastVariant('danger');
+                        setShowToast(true);
+                      }
+                    }}
+                  >
+                    ↻ Refresh
+                  </Button>
+                </div>
                 <RecommendationsList 
                   setToastMessage={setToastMessage} 
                   setShowToast={setShowToast}

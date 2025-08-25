@@ -1,6 +1,4 @@
-from asgiref.sync import async_to_sync
 from celery import shared_task
-from channels.layers import get_channel_layer
 from django.db.models import Avg, Count
 from django.utils import timezone
 import logging
@@ -10,12 +8,16 @@ logger = logging.getLogger(__name__)
 
 @shared_task
 def enqueue_recommendation_refresh(user_id: int) -> None:
-	channel_layer = get_channel_layer()
-	group = f"user_{user_id}_recs"
-	async_to_sync(channel_layer.group_send)(
-		group,
-		{"type": "recommendation.update", "message": {"event": "refresh", "user_id": user_id}},
-	)
+    logger.info(f"Celery: Task STARTED for user {user_id}")
+    print(f"[CELERY] Task STARTED for user {user_id}")
+    from core.services.recommendation_service.recommendation_algorithms import generate_recommendations
+    try:
+        generate_recommendations(user_id)
+        logger.info(f"Celery: Task COMPLETED for user {user_id}")
+        print(f"[CELERY] Task COMPLETED for user {user_id}")
+    except Exception as e:
+        logger.error(f"Celery: Task FAILED for user {user_id}: {e}")
+        print(f"[CELERY] Task FAILED for user {user_id}: {e}")
 
 
 @shared_task

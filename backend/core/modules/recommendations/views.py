@@ -8,10 +8,19 @@ from typing import List
 from .models import RecommendationLog
 from .serializers import RecommendationLogSerializer
 from ..content.models import ContentItem
-from ..content.serializers import ContentItemSerializer
+from ..content.serializers import ContentModuleContentItemSerializer
 from ...services.recommendation_service.service import generate_recommendations
 
 class RecommendationViewSet(viewsets.ViewSet):
+    @action(detail=False, methods=["post"], url_path="refresh")
+    def refresh(self, request: Request) -> Response:
+        """Trigger recommendation refresh for the user asynchronously via Celery."""
+        user = request.user
+        from core.tasks import enqueue_recommendation_refresh
+        import logging
+        logging.getLogger(__name__).info(f"Triggering Celery task for user {user.id}")
+        enqueue_recommendation_refresh.delay(user.id)
+        return Response({"status": "refresh triggered"}, status=status.HTTP_202_ACCEPTED)
     permission_classes = [permissions.IsAuthenticated]
     
     @action(detail=False, methods=["get"], url_path="personalized")
@@ -42,7 +51,7 @@ class RecommendationViewSet(viewsets.ViewSet):
                 score=1.0  # Default score
             )
         
-        data = ContentItemSerializer(recommended_items, many=True).data
+        data = ContentModuleContentItemSerializer(recommended_items, many=True).data
         return Response({"results": data})
     
     @action(detail=False, methods=["get"], url_path="history")
