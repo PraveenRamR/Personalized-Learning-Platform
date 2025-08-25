@@ -14,10 +14,10 @@ A comprehensive asynchronous full-stack web application for AI-driven personaliz
 
 ## Tech Stack
 
-- **Backend**: Django REST Framework + JWT auth + Celery + Redis + Channels + scikit-surprise
+- **Backend**: Django REST Framework + JWT auth + Celery  + scikit-surprise
 - **Frontend**: React + TypeScript + Bootstrap + React Query + Formik
 - **Database**: PostgreSQL
-- **Background Jobs**: Celery with Redis broker
+- **Background Jobs**: Celery with   broker
 - **AI/ML**: Collaborative filtering with scikit-surprise library
 
 ## Quick Start
@@ -71,7 +71,7 @@ docker compose exec backend python manage.py createsuperuser
 4. Submit to add new learning content
 
 ### Content Interaction
-- Browse AI-powered recommendations using collaborative filtering
+- Browse AI-powered recommendations using collaborative filtering using SVD
 - View all available content in the table format
 - Click "Like", "Dislike", or "View" to record interactions
 - Click "Refresh Recommendations" to trigger AI model updates
@@ -209,7 +209,7 @@ The application is containerized and ready for deployment:
 1. Set production environment variables
 2. Build and push Docker images
 3. Deploy with docker-compose or Kubernetes
-4. Configure production database and Redis instances
+4. Configure production database and   instances
 
 ## Contributing
 
